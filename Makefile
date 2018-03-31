@@ -1,9 +1,10 @@
+ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SRC_DIR =  cv
-BUILD_DIR = build
-FONTS_DIR = fonts
-SCAFFOLDS_DIR = scaffolds
+BUILD_DIR = $(dir $(SRC_DIR))/../build
+FONTS_DIR = $(ROOT_DIR)/fonts
+SCAFFOLDS_DIR = $(ROOT_DIR)/scaffolds
 IMAGES_DIR = $(SRC_DIR)/images
-DIST_DIR = dist
+DIST_DIR = $(dir $(SRC_DIR))/../dist
 HTMLTOPDF = wkpdf
 DATE = $(shell date +'%B %d, %Y')
 
@@ -50,14 +51,14 @@ else
 endif
 
 # Target for building stylesheets
-style: stylesheets/*.scss
+style: $(ROOT_DIR)/stylesheets/*.scss
 	compass compile \
 	  --require susy \
-	  --sass-dir stylesheets \
+	  --sass-dir $(ROOT_DIR)/stylesheets \
 	  --javascripts-dir javascripts \
 	  --css-dir $(DIST_DIR)/stylesheets \
 	  --image-dir $(IMAGES_DIR) \
-	  stylesheets/style.scss
+	  $(ROOT_DIR)/stylesheets/style.scss
 
 # Target for media
 media: | directories
@@ -65,11 +66,11 @@ media: | directories
 	rsync -rupE $(IMAGES_DIR) $(DIST_DIR)
 
 # Target for building CV document in html
-html: media style templates/cv.html parts $(SRC_DIR)/cv.md | directories
+html: media style $(ROOT_DIR)/templates/cv.html parts $(SRC_DIR)/cv.md | directories
 	pandoc --standalone \
 	  --section-divs \
 	  --smart \
-	  --template templates/cv.html \
+	  --template $(ROOT_DIR)/templates/cv.html \
 	  --from markdown+yaml_metadata_block+header_attributes+definition_lists \
 	  --to html5 \
 	  $(before-body) \
@@ -90,8 +91,8 @@ endif
 pdftags: $(SRC_DIR)/cv.md
 	pandoc \
 	--from markdown+yaml_metadata_block \
-	--template templates/pdf.metadata \
-	--template templates/pdf.metadata \
+	--template $(ROOT_DIR)/templates/pdf.metadata \
+	--template $(ROOT_DIR)/templates/pdf.metadata \
 	--variable=date:'$(DATE)' \
 	--output $(BUILD_DIR)/pdftags.txt $(SRC_DIR)/cv.md
 
